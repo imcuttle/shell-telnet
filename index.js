@@ -9,9 +9,6 @@ const PASS_WORD = argv.pwd || "123456"
 
 const server = net.createServer((socket) => {
 	// console.log(socket);
-	socket.write('welcome, please input password (like -password 123456)\r\n')
-	socket.setEncoding('ascii')
-	socket.setKeepAlive(true)
 	const shell = cp.exec('/bin/sh', (error, stdout, stderr) => {
 		if (error) {
 			console.error(`exec error: ${error}`);
@@ -20,6 +17,13 @@ const server = net.createServer((socket) => {
 		console.log(`stdout: ${stdout}`);
 		console.log(`stderr: ${stderr}`);
 	});
+	socket.write('welcome, please input password (like -password 123456)\r\n')
+	// socket.setEncoding('ascii')
+	socket.setKeepAlive(true)
+	socket.on('end', () => {
+		shell.kill()
+		console.log('kill!')
+	})
 	let isChecked = false
 	// socket.pipe(shell.stdin)
 	shell.stdout.on('data', (data) => {
@@ -33,21 +37,15 @@ const server = net.createServer((socket) => {
 	shell.on('close', function (code) {
 		let s = 'child process exited with code ' + code
 		console.log(s)
-		socket.end(s)
 	})
 	socket.on('data', (data) => {
-		data = data.replace(/[\r\n]+$/, '');
-		if(data.charCodeAt(0) == 127 && data.charCodeAt(1) == 116) {
-			shell.kill()
-			return
-		}
+		data = data.toString('utf-8').replace(/[\r\n]+$/, '')
 		if(data.startsWith('-password ')) {
 			isChecked = data.split(' ')[1] === PASS_WORD
 			socket.write((isChecked ? 'password correct!' : 'password wrong')+'\r\n')
 			return
 		}
 		if(isChecked) {
-			data = new Buffer(data).toString('utf-8')
 			data = data == '' ? 'pwd' : data
 			shell.stdin.write(data+'\n')
 		} else {
