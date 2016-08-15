@@ -37,7 +37,6 @@ const server = net.createServer((socket) => {
 	})
 	socket.on('data', (data) => {
 		data = data.replace(/[\r\n]+$/, '');
-		console.log('data: ', data)
 		if(data.charCodeAt(0) == 127 && data.charCodeAt(1) == 116) {
 			shell.kill()
 			return
@@ -54,6 +53,7 @@ const server = net.createServer((socket) => {
 		} else {
 			socket.write('please input password (like -password 123456)\r\n')
 		}
+		console.log('data: ', data)
 	})
 }).on('error', (error) => {
 	console.error(error)
