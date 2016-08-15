@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
+"use strict";
 var cp = require('child_process')
 var net = require('net')
 var argv = require('minimist')(process.argv.slice(2))
 
-const PASS_WORD = "moyuyc"
+const PASS_WORD = argv.pwd || "123456"
 
 const server = net.createServer((socket) => {
 	// console.log(socket);
